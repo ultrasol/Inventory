@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:padding="@dimen/activity_margin"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:id="@+id/detail_name"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#2B3D4D"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/activity_margin"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:layout_width="48dp"
+            android:id="@+id/detail_decrease_quantity"
+            android:text="-"
+            android:layout_height="48dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:fontFamily="sans-serif"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="#607D8B"
+            android:id="@+id/detail_quantity"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:layout_width="48dp"
+            android:id="@+id/detail_increase_quantity"
+            android:text="+"
+            android:layout_height="48dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:id="@+id/detail_price"
+        android:fontFamily="sans-serif"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:textColor="#607D8B"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:text="@string/order_product"
+        android:layout_margin="@dimen/activity_margin"
+        android:layout_gravity="center"
+        android:id="@+id/detail_order_product"
+        android:layout_height="wrap_content"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:text="@string/delete"
+        android:layout_gravity="center"
+        android:id="@+id/detail_delete_product"
+        android:layout_height="wrap_content"/>
+</LinearLayout>
