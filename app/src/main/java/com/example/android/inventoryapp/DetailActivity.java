@@ -8,9 +8,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,12 +25,17 @@ import android.widget.Toast;
 
 import com.example.android.inventoryapp.data.ProductContract.ProductEntry;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 public class DetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
     /**
      * Identifier for the product data loader.
      */
     private static final int EXISTING_PRODUCT_LOADER = 0;
+
+    private static final int RESULT_LOAD_IMAGE = 1;
 
     /**
      * Content URI for the existing product.
@@ -103,11 +111,39 @@ public class DetailActivity extends AppCompatActivity
             public void onClick(View v) { showDeleteConfirmationDialog(); }
         });
 
+        Button loadPictureButton = (Button) findViewById(R.id.detail_load_picture);
+        loadPictureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(
+                        Intent.ACTION_OPEN_DOCUMENT,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                );
+                startActivityForResult(i, RESULT_LOAD_IMAGE);
+            }
+        });
+
         /*
             Initialize a loader to read the product data from the database
             and display the current values in the editor.
          */
         getLoaderManager().initLoader(EXISTING_PRODUCT_LOADER, null, this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)  {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                mPictureImageView.setImageBitmap(bitmap);
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -116,12 +152,18 @@ public class DetailActivity extends AppCompatActivity
     private void saveProduct() {
         String quantityString = mQuantityTextView.getText().toString().trim();
 
+        Bitmap bitmap = ((BitmapDrawable) mPictureImageView.getDrawable()).getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] pictureBytes = baos.toByteArray();
+
         /*
             Create a ContentValues object where column names are the keys,
             and product attributes from the editor are the values.
          */
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantityString);
+        values.put(ProductEntry.COLUMN_PRODUCT_PICTURE, pictureBytes);
 
         /*
             This is an EXISTING product,
