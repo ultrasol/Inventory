@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.example.android.inventoryapp.data.ProductContract.ProductEntry;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Allows user to create a new product.
@@ -69,7 +70,7 @@ public class EditorActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(
-                        Intent.ACTION_PICK,
+                        Intent.ACTION_OPEN_DOCUMENT,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
                 );
                 startActivityForResult(i, RESULT_LOAD_IMAGE);
@@ -78,27 +79,18 @@ public class EditorActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)  {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+        if (resultCode == RESULT_OK) {
+            Uri imageUri = data.getData();
 
-            Cursor cursor = getContentResolver().query(
-                    selectedImage,
-                    filePathColumn,
-                    null,
-                    null,
-                    null
-            );
-            cursor.moveToFirst();
-
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
-
-            mPictureImageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                mPictureImageView.setImageBitmap(bitmap);
+            } catch(IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
