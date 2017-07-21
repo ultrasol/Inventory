@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,10 +37,12 @@ public class DetailActivity extends AppCompatActivity
     private TextView mNameTextView;
     private TextView mQuantityTextView;
     private TextView mPriceTextView;
+    private ImageView mPictureImageView;
 
     private String mNameString;
     private String mQuantityString;
     private String mPriceString;
+    private byte[] mPictureBytes;
 
     private int mQuantity;
 
@@ -56,6 +60,7 @@ public class DetailActivity extends AppCompatActivity
         mNameTextView = (TextView) findViewById(R.id.detail_name);
         mQuantityTextView = (TextView) findViewById(R.id.detail_quantity);
         mPriceTextView = (TextView) findViewById(R.id.detail_price);
+        mPictureImageView = (ImageView) findViewById(R.id.detail_picture);
 
         Button decreaseButton = (Button) findViewById(R.id.detail_decrease_quantity);
         decreaseButton.setOnClickListener(new View.OnClickListener() {
@@ -148,7 +153,7 @@ public class DetailActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         /*
-            Inflate the menu options from the res/menu/menule.
+            Inflate the menu options from the res/menu/menu.xml file.
             This adds menu items to the app bar.
          */
         getMenuInflater().inflate(R.menu.menu, menu);
@@ -183,7 +188,8 @@ public class DetailActivity extends AppCompatActivity
                 ProductEntry._ID,
                 ProductEntry.COLUMN_PRODUCT_NAME,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
-                ProductEntry.COLUMN_PRODUCT_PRICE
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_PICTURE
         };
 
         /* This loader will execute the ContentProvider's query method on a background thread. */
@@ -213,11 +219,13 @@ public class DetailActivity extends AppCompatActivity
             int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
             int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
+            int pictureColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PICTURE);
 
             /* Extract out the value from the Cursor for the given column index. */
             mNameString = cursor.getString(nameColumnIndex);
             mQuantityString = cursor.getString(quantityColumnIndex);
             mPriceString = cursor.getString(priceColumnIndex);
+            mPictureBytes = cursor.getBlob(pictureColumnIndex);
 
             mQuantity = Integer.parseInt(mQuantityString);
 
@@ -225,6 +233,13 @@ public class DetailActivity extends AppCompatActivity
             mNameTextView.setText(mNameString);
             mQuantityTextView.setText(mQuantityString);
             mPriceTextView.setText(getString(R.string.product_price, mPriceString));
+            mPictureImageView.setImageBitmap(
+                    BitmapFactory.decodeByteArray(
+                            mPictureBytes,
+                            0,
+                            mPictureBytes.length
+                    )
+            );
         }
     }
 
@@ -234,6 +249,7 @@ public class DetailActivity extends AppCompatActivity
         mNameTextView.setText("");
         mQuantityTextView.setText("");
         mPriceTextView.setText("");
+        mPictureImageView.setImageBitmap(null);
     }
 
     /**
@@ -253,17 +269,7 @@ public class DetailActivity extends AppCompatActivity
             }
         });
 
-        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                /*
-                    User clicked the "Cancel" button, so dismiss the dialog
-                    and continue editing the product.
-                 */
-                if (dialog != null) {
-                    dialog.dismiss();
-                }
-            }
-        });
+        builder.setNegativeButton(R.string.cancel, null);
 
         /* Create and show the AlertDialog. */
         AlertDialog alertDialog = builder.create();

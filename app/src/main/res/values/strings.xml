@@ -72,6 +72,9 @@
     <!-- Label for price information in the editor. [CHAR LIMIT=30] -->
     <string name="category_price">Price</string>
 
+    <!-- Label for picture information in the editor. [CHAR LIMIT=30] -->
+    <string name="category_picture">Picture</string>
+
     <!-- Text hint for name field in the editor. [CHAR LIMIT=30] -->
     <string name="hint_product_name">Name</string>
 
@@ -84,11 +87,13 @@
     <!-- Units for price of the product (euros). [CHAR LIMIT=5] -->
     <string name="unit_product_price">€</string>
 
+    <string name="button_upload_picture">Upload picture</string>
+
     <string name="product_price">%1$s €</string>
 
     <string name="sale_product">Sale</string>
 
     <string name="order_product">Order</string>
-    
+
     <string name="supplier_email">pfs@pfs-france.com</string>
 </resources>

@@ -3,24 +3,37 @@ package com.example.android.inventoryapp;
 import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.example.android.inventoryapp.data.ProductContract.ProductEntry;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * Allows user to create a new product.
  */
 public class EditorActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int RESULT_LOAD_IMAGE = 1;
+
     /**
      * EditText field to enter the product's name.
      */
@@ -36,6 +49,9 @@ public class EditorActivity extends AppCompatActivity
      */
     private EditText mPriceEditText;
 
+    private ImageView mPictureImageView;
+    private Button mLoadPictureButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +62,44 @@ public class EditorActivity extends AppCompatActivity
         mNameEditText = (EditText) findViewById(R.id.edit_product_name);
         mQuantityEditText = (EditText) findViewById(R.id.edit_product_quantity);
         mPriceEditText = (EditText) findViewById(R.id.edit_product_price);
+
+        mPictureImageView = (ImageView) findViewById(R.id.image_view_product);
+        mLoadPictureButton = (Button) findViewById(R.id.button_load_picture);
+        mLoadPictureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(
+                        Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                );
+                startActivityForResult(i, RESULT_LOAD_IMAGE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+            Cursor cursor = getContentResolver().query(
+                    selectedImage,
+                    filePathColumn,
+                    null,
+                    null,
+                    null
+            );
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            String picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            mPictureImageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+        }
     }
 
     /**
@@ -59,7 +113,7 @@ public class EditorActivity extends AppCompatActivity
         String quantityString = mQuantityEditText.getText().toString().trim();
         String priceString = mPriceEditText.getText().toString().trim();
 
-        if (nameString.equals("") || quantityString.equals("") || priceString.equals("")) {
+        if (nameString.isEmpty() || quantityString.isEmpty() || priceString.isEmpty() || mPictureImageView.getDrawable() == null) {
             Toast.makeText(
                     this,
                     getString(R.string.editor_save_product_missing),
@@ -69,6 +123,11 @@ public class EditorActivity extends AppCompatActivity
             return false;
         }
 
+        Bitmap bitmap = ((BitmapDrawable) mPictureImageView.getDrawable()).getBitmap();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] pictureBytes = baos.toByteArray();
+
         /*
             Check if this is supposed to be a new product
             and check if all the fields in the editor are blank.
@@ -77,6 +136,7 @@ public class EditorActivity extends AppCompatActivity
                 TextUtils.isEmpty(nameString)
                 && TextUtils.isEmpty(quantityString)
                 && TextUtils.isEmpty(priceString)
+                && pictureBytes == null
         ) {
             /*
                 Since no fields were modified, we can return early without creating a new product.
@@ -93,6 +153,7 @@ public class EditorActivity extends AppCompatActivity
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, nameString);
         values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantityString);
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, priceString);
+        values.put(ProductEntry.COLUMN_PRODUCT_PICTURE, pictureBytes);
 
         /*
             This is a NEW product, so insert a new product into the provider,
@@ -123,7 +184,8 @@ public class EditorActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         /*
-            Inflate the menu options from the res/menu/menu.xml            This adds menu items to the app bar.
+            Inflate the menu options from the res/menu/menu.xml file.
+            This adds menu items to the app bar.
          */
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
@@ -156,7 +218,8 @@ public class EditorActivity extends AppCompatActivity
                 ProductEntry._ID,
                 ProductEntry.COLUMN_PRODUCT_NAME,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
-                ProductEntry.COLUMN_PRODUCT_PRICE
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_PICTURE
         };
 
         /* This loader will execute the ContentProvider's query method on a background thread. */
@@ -186,16 +249,25 @@ public class EditorActivity extends AppCompatActivity
             int nameColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME);
             int quantityColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY);
             int priceColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE);
+            int productColumnIndex = cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PICTURE);
 
             /* Extract out the value from the Cursor for the given column index. */
             String name = cursor.getString(nameColumnIndex);
             String quantity = cursor.getString(quantityColumnIndex);
             String price = cursor.getString(priceColumnIndex);
+            byte[] picture = cursor.getBlob(productColumnIndex);
 
             /* Update the views on the screen with the values from the database. */
             mNameEditText.setText(name);
             mQuantityEditText.setText(quantity);
             mPriceEditText.setText(price);
+            mPictureImageView.setImageBitmap(
+                    BitmapFactory.decodeByteArray(
+                            picture,
+                            0,
+                            picture.length
+                    )
+            );
         }
     }
 
@@ -205,5 +277,6 @@ public class EditorActivity extends AppCompatActivity
         mNameEditText.setText("");
         mQuantityEditText.setText("");
         mPriceEditText.setText("");
+        mPictureImageView.setImageBitmap(null);
     }
 }

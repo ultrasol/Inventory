@@ -55,8 +55,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:paddingLeft="4dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingLeft="4dp">
 
             <!-- Quantity field -->
             <EditText
@@ -100,4 +100,40 @@
                 android:text="@string/unit_product_price"/>
         </RelativeLayout>
     </LinearLayout>
+
+    <!-- Picture category -->
+    <LinearLayout
+        android:id="@+id/container_picture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Label -->
+        <TextView
+            style="@style/CategoryStyle"
+            android:text="@string/category_picture"/>
+
+        <!-- Input field -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:paddingLeft="4dp">
+
+            <!-- Load picture button -->
+            <Button
+                android:id="@+id/button_load_picture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/button_upload_picture"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Picture -->
+    <ImageView
+        android:id="@+id/image_view_product"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="32dp"/>
 </LinearLayout>

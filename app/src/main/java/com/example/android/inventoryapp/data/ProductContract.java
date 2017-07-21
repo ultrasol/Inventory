@@ -93,11 +93,11 @@ public final class ProductContract {
         public final static String COLUMN_PRODUCT_PRICE = "price";
 
         /**
-         * Image of the product.
+         * Picture of the product.
          *
          * Type : BLOB
          */
-        public final static String COLUMN_PRODUCT_IMAGE = "image";
+        public final static String COLUMN_PRODUCT_PICTURE = "picture";
     }
 }
 

@@ -188,6 +188,11 @@ public class ProductProvider extends ContentProvider {
             throw new IllegalArgumentException("Product requires valid price.");
         }
 
+        byte[] picture = values.getAsByteArray(ProductEntry.COLUMN_PRODUCT_PICTURE);
+        if (picture == null) {
+            throw new IllegalArgumentException("Product requires a picture.");
+        }
+
         /* Get writeable database. */
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
@@ -271,6 +276,17 @@ public class ProductProvider extends ContentProvider {
             Integer price = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_PRICE);
             if (price == null && price < 0) {
                 throw new IllegalArgumentException("Product requires valid price.");
+            }
+        }
+
+        /*
+            If the {@link ProductEntry#COLUMN_PRODUCT_PICTURE} key is present,
+            check that the picture value is not null.
+         */
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_PICTURE)) {
+            byte[] picture = values.getAsByteArray(ProductEntry.COLUMN_PRODUCT_PICTURE);
+            if (picture == null) {
+                throw new IllegalArgumentException("Product requires a picture.");
             }
         }
 
